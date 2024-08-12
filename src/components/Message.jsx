@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useRef } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { ChatContext } from "../context/ChatContext";
+import { format } from "date-fns"; // import a date formatting library like date-fns
 
 const Message = ({ message }) => {
   const { currentUser } = useContext(AuthContext);
@@ -11,6 +12,11 @@ const Message = ({ message }) => {
   useEffect(() => {
     ref.current?.scrollIntoView({ behavior: "smooth" });
   }, [message]);
+
+  // Format the message timestamp to a readable format
+  const formattedTime = message.date
+    ? format(message.date.toDate(), "p") // "p" gives the time in 'HH:mm AM/PM' format
+    : "just now";
 
   return (
     <div
@@ -26,7 +32,7 @@ const Message = ({ message }) => {
           }
           alt=""
         />
-        <span>just now</span>
+        <span>{formattedTime}</span>
       </div>
       <div className="messageContent">
         <p>{message.text}</p>

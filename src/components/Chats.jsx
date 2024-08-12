@@ -1,5 +1,5 @@
-import { doc, onSnapshot } from "firebase/firestore";
 import React, { useContext, useEffect, useState } from "react";
+import { doc, onSnapshot } from "firebase/firestore";
 import { AuthContext } from "../context/AuthContext";
 import { ChatContext } from "../context/ChatContext";
 import { db } from "../firebase";
@@ -7,7 +7,7 @@ import { db } from "../firebase";
 const Chats = () => {
   const [chats, setChats] = useState([]);
 
-  const { currentUser } = useContext(AuthContext);
+  const { currentUser, allUsers } = useContext(AuthContext);
   const { dispatch } = useContext(ChatContext);
 
   useEffect(() => {
@@ -21,25 +21,42 @@ const Chats = () => {
       };
     };
 
-    currentUser.uid && getChats();
-  }, [currentUser.uid]);
+    currentUser?.uid && getChats();
+  }, [currentUser]);
 
   const handleSelect = (u) => {
     dispatch({ type: "CHANGE_USER", payload: u });
   };
 
+  // Filter out the current user from allUsers
+  const otherUsers = allUsers.filter((user) => user.uid !== currentUser.uid);
+
   return (
     <div className="chats">
-      {Object.entries(chats)?.sort((a,b)=>b[1].date - a[1].date).map((chat) => (
+      {/* Render chats if available */}
+      {chats &&
+        Object.entries(chats)
+          .sort((a, b) => b[1].date - a[1].date)
+          .map((chat) => (
+            <div
+              className="userChat"
+              key={chat[0]}
+              onClick={() => handleSelect(chat[1].userInfo)}
+            >
+              <div className="userChatInfo"></div>
+            </div>
+          ))}
+
+      {/* Render all users except the current user */}
+      {otherUsers.map((user) => (
         <div
           className="userChat"
-          key={chat[0]}
-          onClick={() => handleSelect(chat[1].userInfo)}
+          key={user.uid}
+          onClick={() => handleSelect(user)}
         >
-          <img src={chat[1].userInfo.photoURL} alt="" />
+          <img src={user.photoURL} alt="" />
           <div className="userChatInfo">
-            <span>{chat[1].userInfo.displayName}</span>
-            <p>{chat[1].lastMessage?.text}</p>
+            <span>{user.displayName}</span>
           </div>
         </div>
       ))}
